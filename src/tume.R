@@ -1,6 +1,5 @@
 # TODO:
-#
-# Stick 7: Remover extenção dos nomes dos arquivos 
+# 
 # 
 # Author: Gorgens
 ###############################################################################
@@ -10,7 +9,7 @@
 # Estima alturas nao medidas em campo por especie de um tume
 hipsometrica <- function(tume.esp){
 	
-	uteis = na.omit(tume.esp[, -8])
+	uteis = na.omit(tume.esp[, -c(8, 9)])
 	
 	logH = log(uteis$H_m)
 	invD = 1/uteis$DAP_cm
@@ -20,12 +19,14 @@ hipsometrica <- function(tume.esp){
 	rm(logH, invD)
 	tume.esp = cbind(tume.esp, invD = 1/tume.esp$DAP_cm)
 	
+	correcao = exp(var(modelo$residuals)/2)
+	
 	estH = 0
 	
 	for (i in seq(1,nrow(tume.esp))){
-		if (is.na(tume.esp$DAP_cm[i]) == FALSE & is.na(tume.esp$H_m[i]) == TRUE){
+		if (is.na(tume.esp$DAP_cm[i]) == FALSE & is.na(tume.esp$H_m[i]) == TRUE) {
 			
-			estH[i] = exp(predict(modelo, new = tume.esp[i,]))
+			estH[i] = exp(predict(modelo, new = tume.esp[i,])) * correcao
 			
 		} else {
 			
@@ -51,6 +52,7 @@ resumo_pos24 <- function(tume.esp, estH_m){
 	
 	resumo_pos <- data.frame(Especie = as.character(tume.esp$Esp[1]),
 			Idade = 0,
+			Area = 0,
 			DAPmed = 0,
 			DAPsd = 0,
 			Hmed = 0,
@@ -62,21 +64,25 @@ resumo_pos24 <- function(tume.esp, estH_m){
 			Sobre = 0,
 			IMA = 0)
 	
+	tume.esp = tume.esp[, -9]
 	tume.esp = cbind(tume.esp, estH_m = estH)
 	
 	resumo_pos$Idade = tume.esp$I_meses[1]
 	resumo_pos$DAPmed = mean(na.omit(tume.esp$DAP_cm))
 	resumo_pos$DAPsd = sd(na.omit(tume.esp$DAP_cm))
-	resumo_pos$Hmed = mean(na.omit(tume.esp$estH_m))
-	resumo_pos$Hsd = sd(na.omit(tume.esp$estH_m))
-	#resumo_pos$Hdom = mean(tume.esp$H_m[tume.esp$Cod == 6]) # Stick 6
-	resumo_pos$Hdom = max(na.omit(tume.esp$H_m)) # Stick 6
+	#resumo_pos$Hmed = mean(na.omit(tume.esp$estH_m))
+	#resumo_pos$Hsd = sd(na.omit(tume.esp$estH_m))
+	resumo_pos$Hmed = mean(na.omit(tume.esp$H_m))
+	resumo_pos$Hsd = sd(na.omit(tume.esp$H_m))
+	resumo_pos$Hdom = mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])) # Stick 6
+	#resumo_pos$Hdom = max(na.omit(tume.esp$H_m))
 	resumo_pos$G = sum(na.omit(tume.esp$DAP_cm)^2/40000) * 10000 / tume.esp$Parc_m2[1]
 	resumo_pos$V = parcVolume(tume.esp)  
 	resumo_pos$N = max(tume.esp$N_arv) * 10000 / tume.esp$Parc_m2[1] 
 	#resumo_pos$Sobre = (max(tume.esp$N_arv) - nrow(tume.esp[tume.esp$Cod == 1 & tume.esp$Cod == 5,])) / max(tume.esp$N_arv) * 100 # Stick 1
 	resumo_pos$Sobre = length(na.omit(tume.esp$DAP_cm)) / max(tume.esp$N_arv) * 100 # Stick 1
 	resumo_pos$IMA = resumo_pos$V[1] / (tume.esp$I_meses[1]/12)
+	resumo_pos$Area = tume.esp$Parc_m2[1]
 	
 	return(resumo_pos)
 	
@@ -87,6 +93,7 @@ resumo_pre24 <- function(tume.esp){
 	
 	resumo_pre <- data.frame(Especie = as.character(tume.esp$Esp[1]),
 			Idade = 0,
+			Area = 0,
 			Hmed = 0,
 			Hsd = 0,
 			N = 0,
@@ -98,6 +105,7 @@ resumo_pre24 <- function(tume.esp){
 	resumo_pre$N = max(tume.esp$N_arv) * 10000 / tume.esp$Parc_m2[1] 
 	#resumo_pre$Sobre = (max(tume.esp$N_arv) - nrow(tume.esp[tume.esp$Cod == 1 & tume.esp$Cod == 5,])) / max(tume.esp$N_arv) * 100 # Stick 1
 	resumo_pre$Sobre = length(na.omit(tume.esp$H_m)) / max(tume.esp$N_arv) * 100 # Stick 1
+	resumo_pre$Area = tume.esp$Parc_m2[1]
 	
 	return(resumo_pre)
 	
@@ -117,7 +125,7 @@ plotIMA <- function(tabela_resumo, l){
 	end_point = 0.5 + nrow(tabela_resumo) + nrow(tabela_resumo)-1
 	
 	# cria gráfico de barras do IMA
-	jpeg(paste(TUME.OUT, l, ".jpg", sep=""))
+	jpeg(paste(TUME.OUT, l, ".jpg", sep=""), res = 150)
 	
 	# Adiciona margem inferior para rótulo do eixo x rotacionado
 	par(mar = c(7, 4, 2, 2) + 0.2)
@@ -142,12 +150,50 @@ plotIMA <- function(tabela_resumo, l){
 }
 
 ### Cria gráfico de barras para o sobrevivencia
-plotSobre <- function(tabela_resumo, l){
+plotHmed <- function(tabela_resumo, l){
 	
 	#jpeg(paste(TUME.OUT, l, ".jpg", sep=""))
 	#barplot(tabela_resumo$Sobre, main="Sobrevivência", names.arg = tabela_resumo$Especie, cex.names=0.3)
 	#dev.off()
 
+	# ordena a sobrevivência de forma descrescente 
+	tabela_resumo = tabela_resumo[with(tabela_resumo, order(-Hmed)), ]
+	
+	# Distância para rotulação do eixo x
+	end_point = 0.5 + nrow(tabela_resumo) + nrow(tabela_resumo)-1
+	
+	# cria gráfico de barras do IMA
+	jpeg(paste(TUME.OUT, l, ".jpg", sep=""), res = 150)
+	
+	# Adiciona margem inferior para rótulo do eixo x rotacionado
+	par(mar = c(7, 4, 4, 2) + 0.2)
+	barplot(tabela_resumo$Hmed,
+			col="grey50", 
+			main=paste("Altura media - ", tabela_resumo$Idade[1], " meses", sep=""),
+			cex.main=1,
+			ylab = "Altura média (m)",
+			ylim = c(0,100),
+			xlab = "",
+			space = 1)
+	
+	# Coloca e rotaciona o rótulo do eixo X saltando os espaço entre colunas
+	text(seq(1.5, end_point, by=2),
+			par("usr")[3]-0.25, 
+			srt = 60,
+			adj = 1,
+			xpd = TRUE,
+			labels = tabela_resumo$Especie,
+			cex = 1)
+	dev.off()
+	
+}
+
+plotSobre <- function(tabela_resumo, l){
+	
+	#jpeg(paste(TUME.OUT, l, ".jpg", sep=""))
+	#barplot(tabela_resumo$Sobre, main="Sobrevivência", names.arg = tabela_resumo$Especie, cex.names=0.3)
+	#dev.off()
+	
 	# ordena a sobrevivência de forma descrescente 
 	tabela_resumo = tabela_resumo[with(tabela_resumo, order(-Sobre)), ]
 	
@@ -155,7 +201,7 @@ plotSobre <- function(tabela_resumo, l){
 	end_point = 0.5 + nrow(tabela_resumo) + nrow(tabela_resumo)-1
 	
 	# cria gráfico de barras do IMA
-	jpeg(paste(TUME.OUT, l, ".jpg", sep=""))
+	jpeg(paste(TUME.OUT, l, ".jpg", sep=""), res = 150)
 	
 	# Adiciona margem inferior para rótulo do eixo x rotacionado
 	par(mar = c(7, 4, 4, 2) + 0.2)
@@ -220,6 +266,7 @@ for (l in TUME.FILES){
 				
 				sem_dados <- data.frame(Especie = as.character(tume.esp$Esp[1]),
 						Idade = 0,
+						Area = 0,
 						DAPmed = 0,
 						DAPsd = 0,
 						Hmed = 0,
@@ -265,7 +312,8 @@ for (l in TUME.FILES){
 		#write.csv(tabela_resumo, file = paste(TUME.OUT, l, ".csv", sep = ""))
 		write.csv(tabela_resumo, file = paste(TUME.OUT, "out_", l, sep = ""))
 		
-		plotSobre(tabela_resumo, l)
+		#plotSobre(tabela_resumo, l)
+		plotHmed(tabela_resumo, l)
 		
 		
 	}
