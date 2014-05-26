@@ -68,21 +68,21 @@ resumo_pos24 <- function(tume.esp, estH_m){
 	tume.esp = cbind(tume.esp, estH_m = estH)
 	
 	resumo_pos$Idade = tume.esp$I_meses[1]
-	resumo_pos$DAPmed = mean(na.omit(tume.esp$DAP_cm))
-	resumo_pos$DAPsd = sd(na.omit(tume.esp$DAP_cm))
+	resumo_pos$DAPmed = round(mean(na.omit(tume.esp$DAP_cm)), 1)
+	resumo_pos$DAPsd = round(sd(na.omit(tume.esp$DAP_cm)), 1)
 	#resumo_pos$Hmed = mean(na.omit(tume.esp$estH_m))
 	#resumo_pos$Hsd = sd(na.omit(tume.esp$estH_m))
-	resumo_pos$Hmed = mean(na.omit(tume.esp$H_m))
-	resumo_pos$Hsd = sd(na.omit(tume.esp$H_m))
-	resumo_pos$Hdom = mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])) # Stick 6
+	resumo_pos$Hmed = round(mean(na.omit(tume.esp$H_m)), 1)
+	resumo_pos$Hsd = round(sd(na.omit(tume.esp$H_m)), 1)
+	resumo_pos$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1) # Stick 6
 	#resumo_pos$Hdom = max(na.omit(tume.esp$H_m))
-	resumo_pos$G = sum(na.omit(tume.esp$DAP_cm)^2/40000) * 10000 / tume.esp$Parc_m2[1]
-	resumo_pos$V = parcVolume(tume.esp)  
-	resumo_pos$N = max(tume.esp$N_arv) * 10000 / tume.esp$Parc_m2[1] 
+	resumo_pos$G = round(sum(na.omit(tume.esp$DAP_cm)^2/40000) * 10000 / tume.esp$Parc_m2[1], 0)
+	resumo_pos$V = round(parcVolume(tume.esp), 0)  
+	resumo_pos$N = round(max(tume.esp$N_arv) * 10000 / tume.esp$Parc_m2[1], 0) 
 	#resumo_pos$Sobre = (max(tume.esp$N_arv) - nrow(tume.esp[tume.esp$Cod == 1 & tume.esp$Cod == 5,])) / max(tume.esp$N_arv) * 100 # Stick 1
-	resumo_pos$Sobre = length(na.omit(tume.esp$DAP_cm)) / max(tume.esp$N_arv) * 100 # Stick 1
-	resumo_pos$IMA = resumo_pos$V[1] / (tume.esp$I_meses[1]/12)
-	resumo_pos$Area = tume.esp$Parc_m2[1]
+	resumo_pos$Sobre = round(length(na.omit(tume.esp$DAP_cm)) / max(tume.esp$N_arv) * 100, 0) # Stick 1
+	resumo_pos$IMA = round(resumo_pos$V[1] / (tume.esp$I_meses[1]/12), 0)
+	resumo_pos$Area = round(tume.esp$Parc_m2[1], 1)
 	
 	return(resumo_pos)
 	
@@ -100,12 +100,12 @@ resumo_pre24 <- function(tume.esp){
 			Sobre = 0)
 	
 	resumo_pre$Idade = tume.esp$I_meses[1]
-	resumo_pre$Hmed = mean(na.omit(tume.esp$H_m))
-	resumo_pre$Hsd = sd(na.omit(tume.esp$H_m))
-	resumo_pre$N = max(tume.esp$N_arv) * 10000 / tume.esp$Parc_m2[1] 
+	resumo_pre$Hmed = round(mean(na.omit(tume.esp$H_m)), 1)
+	resumo_pre$Hsd = round(sd(na.omit(tume.esp$H_m)), 1)
+	resumo_pre$N = round(max(tume.esp$N_arv) * 10000 / tume.esp$Parc_m2[1], 0)
 	#resumo_pre$Sobre = (max(tume.esp$N_arv) - nrow(tume.esp[tume.esp$Cod == 1 & tume.esp$Cod == 5,])) / max(tume.esp$N_arv) * 100 # Stick 1
-	resumo_pre$Sobre = length(na.omit(tume.esp$H_m)) / max(tume.esp$N_arv) * 100 # Stick 1
-	resumo_pre$Area = tume.esp$Parc_m2[1]
+	resumo_pre$Sobre = round(length(na.omit(tume.esp$H_m)) / max(tume.esp$N_arv) * 100, 0) # Stick 1
+	resumo_pre$Area = round(tume.esp$Parc_m2[1], 1)
 	
 	return(resumo_pre)
 	
@@ -282,10 +282,14 @@ for (l in TUME.FILES){
 			}
 		}
 	
+		plotIMA(tabela_resumo, l)
+		
 		#write.csv(tabela_resumo, file = paste(TUME.OUT, l, ".csv", sep = ""))
+		#unidades = c("", "meses", "m^2", "cm", "cm", "m", "m", "m", "m^2/ha", "m^3/ha", "fustes/ha", "%", "m^3/ha/ano")
+		#tabela_resumo = rbind(unidades, tabela_resumo)	
 		write.csv(tabela_resumo, file = paste(TUME.OUT, "out_", l, sep = ""))
 		
-		plotIMA(tabela_resumo, l)
+		
 	} else {
 		
 		for (e in TUME.ESP){
@@ -309,23 +313,15 @@ for (l in TUME.FILES){
 			}
 		}
 		
-		#write.csv(tabela_resumo, file = paste(TUME.OUT, l, ".csv", sep = ""))
-		write.csv(tabela_resumo, file = paste(TUME.OUT, "out_", l, sep = ""))
-		
 		#plotSobre(tabela_resumo, l)
 		plotHmed(tabela_resumo, l)
 		
+		#write.csv(tabela_resumo, file = paste(TUME.OUT, l, ".csv", sep = ""))
+		#unidades = c("", "meses", "m", "m", "fustes/ha", "%")
+		#tabela_resumo = rbind(unidades, tabela_resumo)
+		write.csv(tabela_resumo, file = paste(TUME.OUT, "out_", l, sep = ""))
+	
 		
 	}
 
 }
-
-
-# IMPLEMENTACOES RECENTES
-# Stick 4: Criar codigo para idade < 18 - Implementado em 20140220
-# Stick 2: Acrescentar na tabela resumo sd.DAP e sd.Ht - Implementado em 20140221 
-# Stick 5: Acrescentar coluna para idade na tabela resumo - Implementado em 20140224
-#
-# Implementados mas com problemas nos códigos dos arquivos originais do TUME 
-# Stick 1: Calcular sobrevivência como Cont(F & M)/max(cova) - Implementado em 20140222
-# Stick 3: Calculo da altura dominante para media(H|cod==6) - Implementado em 20140222 
