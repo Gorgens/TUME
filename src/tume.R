@@ -1,12 +1,10 @@
-# TODO:
-# 
 # Code for processing TUME (ESALQ/USP)
 # Author: Gorgens (gorgens at usp.br)
 ###############################################################################
 
 ### -------------------------------------------------------------------------------
 ### Funcoes auxiliares
-# Estima alturas nao medidas em campo por especie de um tume
+# Para cada especie, ajusta modelo hipsometrico e estima as alturas
 hipsometrica <- function(tume.esp){
   
   tume.temp = tume.esp
@@ -46,7 +44,7 @@ hipsometrica <- function(tume.esp){
   rm(modelo)
 }
 
-### Calculo do volume por especie dentro de um tume
+### Calcula volume das arvores individuais com base no DAP, altura e fator de forma
 parcVolume <- function(tume.esp){
   tempV = na.omit(cbind(tume.esp$DAP_cm, tume.esp$estH_m))
   volume = sum((tempV[,1]^2*pi/40000) * tempV[,2] * 0.5) * 10000 / tume.esp$Parc_m2[1]
@@ -54,246 +52,214 @@ parcVolume <- function(tume.esp){
   return(volume)
 }
 
-### Calcula e cria tabela de resumo por especie dentro de um tume maior que 2 anos sem desbaste
+### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade maior que 23 meses e SEM desbaste
 resumo_pos24 <- function(tume.esp, estH_m){
   
-  resumo_pos <- data.frame(Tume = tume.esp$N_tume[1],
-                           Especie = as.character(tume.esp$Esp[1]),
-                           Idade = 0,
-                           Area = 0,
+  resumo_pos <- data.frame(N_tume = tume.esp$N_tume[1],
+                           Esp = as.character(tume.esp$Esp[1]),
+                           I_meses = 0,
+                           Parc_m2 = 0,
                            DAPmed = 0,
                            DAPsd = 0,
                            Hmed = 0,
                            Hsd = 0,
                            Hdom = 0,
-                           N = 0,
-                           Sobre = 0,
+                           N_fuste = 0,
+                           Sobr = 0,
                            G = 0,
                            V = 0,
                            IMA = 0,
-                           Biomassa = 0)
+                           B = 0)
   
   tume.esp = tume.esp[, -9] # Remover Cod2
   tume.esp = cbind(tume.esp, estH_m = estH)
   
-  resumo_pos$Idade = tume.esp$I_meses[1]
+  resumo_pos$I_meses = tume.esp$I_meses[1]
+  resumo_pos$Parc_m2 = round(tume.esp$Parc_m2[1], 1)  
   resumo_pos$DAPmed = round(mean(na.omit(tume.esp$DAP_cm)), 1)
   resumo_pos$DAPsd = round(sd(na.omit(tume.esp$DAP_cm)), 1)
   resumo_pos$Hmed = round(mean(na.omit(tume.esp$H_m)), 1)
   resumo_pos$Hsd = round(sd(na.omit(tume.esp$H_m)), 1)
-  resumo_pos$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1) # Stick 6
-  resumo_pos$N = round(length(na.omit(tume.esp$DAP_cm)) * 10000 / tume.esp$Parc_m2[1], 0)
-  resumo_pos$Sobre = round(length(na.omit(tume.esp$DAP_cm)) / max(tume.esp$N_arv) * 100, 0) # Stick 1
-  resumo_pos$G = round(sum(na.omit(tume.esp$DAP_cm)^2 * pi /40000) * 10000 / tume.esp$Parc_m2[1], 0)
+  resumo_pos$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1)
+  resumo_pos$N_fuste = round(length(na.omit(tume.esp$DAP_cm)) * 10000 / tume.esp$Parc_m2[1], 0)
+  resumo_pos$Sobr = round((nrow(tume.esp[tume.esp$Cod != 1 & tume.esp$Cod != 5,]) / max(tume.esp$N_arv) * 100), 1) # Linhas diferentes de Cod 1 (falha) e Cod 5 (mortas) dividido pelo total de arvores
+  resumo_pos$G = round(sum(na.omit(tume.esp$DAP_cm)^2 * pi /40000) * 10000 / tume.esp$Parc_m2[1], 1)
   resumo_pos$V = round(parcVolume(tume.esp), 0)  
-  resumo_pos$IMA = round(resumo_pos$V[1] / (tume.esp$I_meses[1]/12), 0)
-  resumo_pos$Area = round(tume.esp$Parc_m2[1], 1)  
+  resumo_pos$IMA = round(resumo_pos$V[1] / (tume.esp$I_meses[1]/12), 1)
   if (e %in% ESP.DENSIDADE$Esp){
-    resumo_pos$Biomassa = resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2]
+    resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
   } else {
-    resumo_pos$Biomassa = 0
+    resumo_pos$B = ""
   } # Incluir depois
   
   return(resumo_pos)
   
 }
 
-### Calcula e cria tabela de resumo por especie dentro de um tume maior que 2 anos com desbaste
+### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade maior que 23 meses e COM desbaste
 resumo_pos24desb <- function(tume.esp, estH_m){
   
-  resumo_pos <- data.frame(Tume = tume.esp$N_tume[1],
-                           Especie = as.character(tume.esp$Esp[1]),
-                           Idade = 0,
-                           Area = 0,
+  resumo_pos <- data.frame(N_tume = tume.esp$N_tume[1],
+                           Esp = as.character(tume.esp$Esp[1]),
+                           I_meses = 0,
+                           Parc_m2 = 0,
                            DAPmed = 0,
                            DAPsd = 0,
                            Hmed = 0,
                            Hsd = 0,
                            Hdom = 0,
-                           N = 0,
-                           Sobre = 0,
+                           N_fuste = 0,
+                           Sobr = 0,
                            G = 0,
                            V = 0, 
                            IMA = 0,
-                           Biomassa = 0)
+                           B = 0)
   
   tume.esp = tume.esp[, -9]
   tume.esp = cbind(tume.esp, estH_m = estH)
   
-  resumo_pos$Idade = tume.esp$I_meses[1]
+  resumo_pos$I_meses = tume.esp$I_meses[1]
+  resumo_pos$Parc_m2 = round(tume.esp$Parc_m2[1], 1)
   resumo_pos$DAPmed = round(mean(na.omit(tume.esp$DAP_cm)), 1)
   resumo_pos$DAPsd = round(sd(na.omit(tume.esp$DAP_cm)), 1)
   resumo_pos$Hmed = round(mean(na.omit(tume.esp$H_m)), 1)
   resumo_pos$Hsd = round(sd(na.omit(tume.esp$H_m)), 1)
-  resumo_pos$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1) # Stick 6
-  resumo_pos$N = round(length(na.omit(tume.esp$DAP_cm)) * 10000 / tume.esp$Parc_m2[1], 0)
-  resumo_pos$Sobre = ""
-  resumo_pos$G = round(sum(na.omit(tume.esp$DAP_cm)^2 * pi /40000) * 10000 / tume.esp$Parc_m2[1], 0)
+  resumo_pos$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1)
+  resumo_pos$N_fuste = round(length(na.omit(tume.esp$DAP_cm)) * 10000 / tume.esp$Parc_m2[1], 0)
+  resumo_pos$Sobr = ""
+  resumo_pos$G = round(sum(na.omit(tume.esp$DAP_cm)^2 * pi /40000) * 10000 / tume.esp$Parc_m2[1], 1)
   resumo_pos$V = round(parcVolume(tume.esp), 0)
   resumo_pos$IMA = ""
-  resumo_pos$Area = round(tume.esp$Parc_m2[1], 1)
   if (e %in% ESP.DENSIDADE$Esp){
-    resumo_pos$Biomassa = resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2]
+    resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
   } else {
-    resumo_pos$Biomassa = 0
-  } # Incluir depois
+    resumo_pos$B = ""
+  }
   
   return(resumo_pos)
   
 }
 
-### Calcula e cria tabela de resumo por especie dentro de um tume menor que 2 anos
+### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade inferior à 24 meses
 resumo_pre24 <- function(tume.esp){
   
-  resumo_pre <- data.frame(Tume = tume.esp$N_tume[1],
-                           Especie = as.character(tume.esp$Esp[1]),
-                           Idade = 0,
-                           Area = 0,
+  resumo_pre <- data.frame(N_tume = tume.esp$N_tume[1],
+                           Esp = as.character(tume.esp$Esp[1]),
+                           I_meses = 0,
+                           Parc_m2 = 0,
                            Dapmed = 0,
                            Dapsd = 0,
                            Hmed = 0,
                            Hsd = 0,
                            Hdom = 0,
-                           N = 0,
-                           Sobre = 0,
+                           N_fuste = 0,
+                           Sobr = 0,
                            G = 0,
                            V = 0,
                            IMA = 0,
-                           Biomassa = 0)
+                           B = 0)
   
-  resumo_pre$Idade = tume.esp$I_meses[1]
+  resumo_pre$I_meses = tume.esp$I_meses[1]
+  resumo_pre$Parc_m2 = round(tume.esp$Parc_m2[1], 1)
+  resumo_pre$Dapmed = ""
+  resumo_pre$Dapsd = ""
   resumo_pre$Hmed = round(mean(na.omit(tume.esp$H_m)), 1)
   resumo_pre$Hsd = round(sd(na.omit(tume.esp$H_m)), 1)
   resumo_pre$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1) # Stick 6
-  resumo_pre$N = round(length(na.omit(tume.esp$H_m)) * 10000 / tume.esp$Parc_m2[1], 0)
-  resumo_pre$Sobre = round(length(na.omit(tume.esp$H_m)) / max(tume.esp$N_arv) * 100, 0) # Stick 1
-  resumo_pre$Area = round(tume.esp$Parc_m2[1], 1)
-  resumo_pre$Dapmed = ""
-  resumo_pre$Dapsd = ""
+  resumo_pre$N_fuste = round(length(na.omit(tume.esp$H_m)) * 10000 / tume.esp$Parc_m2[1], 0)
+  resumo_pre$Sobr = round((nrow(tume.esp[tume.esp$Cod != 1 & tume.esp$Cod != 5,]) / max(tume.esp$N_arv) * 100), 1) # Linhas diferentes de Cod 1 (falha) e Cod 5 (mortas) dividido pelo total de ?rvores
   resumo_pre$G = ""
   resumo_pre$V = ""
   resumo_pre$IMA = ""
-  resumo_pre$Biomassa = ""
+  resumo_pre$B = ""
   
   return(resumo_pre)
   
 }
 
-### Cria gráfico de barras para o IMA
+### Cria grafico de barras para a variavel estoque de volume
 plotVolume <- function(tabela_resumo, l){
   
-  #jpeg(paste(TUME.OUT, l, ".jpg", sep=""))
-  #barplot(tabela_resumo$IMA, main="IMA", names.arg = tabela_resumo$Especie, cex.names=0.3)
-  #dev.off()
-  
-  # ordena o IMA de forma descrescente 
+  #Ordena o Volume de forma descrescente 
   tabela_resumo = tabela_resumo[with(tabela_resumo, order(-V)), ]
   
-  # Distância para rotulação do eixo x
+  #Distancia horizontal para ultimo rotulo do eixo x
   end_point = 0.5 + nrow(tabela_resumo) + nrow(tabela_resumo)-1
   
-  # cria gráfico de barras do IMA
-  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = 15, units = "cm", res = 150)
-  
-  # Adiciona margem inferior para rótulo do eixo x rotacionado
-  par(mar = c(7, 4, 2, 2) + 0.2)
+  if (nrow(tabela_resumo) > 17) {
+  #Armazena grafico de barras do Volume em um arquivo de extensao .jpeg
+  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = nrow(tabela_resumo)*0.6, units = "cm", res = 300)
+  } else {
+  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = 10, units = "cm", res = 300)  
+  }
+    
+  #Adiciona espaco na margem inferior para rotulacao do eixo x
+  par(mar = c(5, 4, 2, 1) + 0.2, mgp = c(2.2,1,0))
+  #Fonte padrao utilizada pelo R
+  par(family="sans")
+  #Configuracoes do grafico de barras
   barplot(tabela_resumo$V,
           col="grey50", 
-          main=paste("TUME ", tabela_resumo$Tume[1], " - ", tabela_resumo$Idade[1], " meses", sep=""),
-          cex.main = 1,
-          cex.axis = 0.5,
-          cex.lab = 0.8,
+          main=paste("TUME ", tabela_resumo$N_tume[1], " - ", tabela_resumo$I_meses[1], " meses", sep=""),
+          cex.main = 0.6,
+          cex.axis = 0.6,
+          cex.lab = 0.6,
           ylab = "Volume (m³/ha)",
           ylim = c(0, 1.1 * max(tabela_resumo$V)),
           xlab = "",
           space = 1)
   
-  # Coloca e rotaciona o rótulo do eixo X saltando os espaço entre colunas
+  # Coloca e rotaciona o rotulo do eixo X saltando os espacos entre colunas
   text(seq(1.5, end_point, by=2),
-       par("usr")[3]-0.25, 
-       srt = 60,
+       par("usr")[3]-2, 
+       srt = 60, #rotaciona 60 graus no sentido horario
        adj = 1,
        xpd = TRUE,
-       labels = tabela_resumo$Especie,
-       cex = 0.5)
+       labels = tabela_resumo$Esp,
+       cex = 0.6)
   dev.off()
 }
 
-### Cria gráfico de barras para a altura média
+### Cria grafico de barras para a variavel altura media
 plotHmed <- function(tabela_resumo, l){
   
-  #jpeg(paste(TUME.OUT, l, ".jpg", sep=""))
-  #barplot(tabela_resumo$Sobre, main="Sobrevivência", names.arg = tabela_resumo$Especie, cex.names=0.3)
-  #dev.off()
-  
-  # ordena a sobrevivência de forma descrescente 
+  #Ordena a altura média de forma descrescente 
   tabela_resumo = tabela_resumo[with(tabela_resumo, order(-Hmed)), ]
   
-  # Distância para rotulação do eixo x
+  #Distancia horizontal para ultimo rotulo do eixo x
   end_point = 0.5 + nrow(tabela_resumo) + nrow(tabela_resumo)-1
   
-  # cria gráfico de barras do IMA
-  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = 15, units = "cm", res = 150)
+  if (nrow(tabela_resumo) > 17) {
+  #Armazena grafico de barras do Volume em um arquivo de extensao .jpeg
+  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = nrow(tabela_resumo)*0.6, units = "cm", res = 300)
+  } else {
+  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = 10, units = "cm", res = 300) 
+  }
   
-  # Adiciona margem inferior para rótulo do eixo x rotacionado
-  par(mar = c(7, 4, 4, 2) + 0.2)
+  #Adiciona espaco na margem inferior para rotulacao do eixo x
+  par(mar = c(5, 4, 2, 1) + 0.2, mgp = c(2.2,1,0))
+  #Fonte padrao utilizada pelo R
+  par(family="sans")
+  #Configuracoes do grafico de barras
   barplot(tabela_resumo$Hmed,
           col="grey50", 
-          main=paste("TUME ", tabela_resumo$Tume[1], " - ", tabela_resumo$Idade[1], " meses", sep=""),
-          cex.main=1,
-          cex.axis = 0.5,
-          cex.lab = 0.8,
-          ylab = "Altura média (m)",
+          main=paste("TUME ", tabela_resumo$N_tume[1], " - ", tabela_resumo$I_meses[1], " meses", sep=""),
+          cex.main=0.6,
+          cex.axis = 0.6,
+          cex.lab = 0.6,
+          ylab = "Altura media (m)",
           ylim = c(0, 1.1 * max(tabela_resumo$Hmed)),
           xlab = "",
-          space = 1)
+          space = 1) #largura das barras e largura entre as barras igual
   
-  # Coloca e rotaciona o rótulo do eixo X saltando os espaço entre colunas
+  # Coloca e rotaciona o rotulo do eixo X saltando os espacos entre colunas
   text(seq(1.5, end_point, by=2),
-       par("usr")[3]-0.25, 
-       srt = 60,
+       par("usr")[3]-0.1, 
+       srt = 60, #rotaciona 60 graus no sentido horario
        adj = 1,
        xpd = TRUE,
-       labels = tabela_resumo$Especie,
-       cex = 0.5)
-  dev.off()
-  
-}
-
-plotSobre <- function(tabela_resumo, l){
-  
-  #jpeg(paste(TUME.OUT, l, ".jpg", sep=""))
-  #barplot(tabela_resumo$Sobre, main="Sobrevivência", names.arg = tabela_resumo$Especie, cex.names=0.3)
-  #dev.off()
-  
-  # ordena a sobrevivência de forma descrescente 
-  tabela_resumo = tabela_resumo[with(tabela_resumo, order(-Sobre)), ]
-  
-  # Distância para rotulação do eixo x
-  end_point = 0.5 + nrow(tabela_resumo) + nrow(tabela_resumo)-1
-  
-  # cria gráfico de barras do IMA
-  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), res = 150)
-  
-  # Adiciona margem inferior para rótulo do eixo x rotacionado
-  par(mar = c(7, 4, 4, 2) + 0.2)
-  barplot(tabela_resumo$Sobre,
-          col="grey50", 
-          main=paste("Sobrevivência - ", tabela_resumo$Idade[1], " meses", sep=""),
-          cex.main=1,
-          ylab = "Sobrevivência (%)",
-          ylim = c(0,100),
-          xlab = "",
-          space = 1)
-  
-  # Coloca e rotaciona o rótulo do eixo X saltando os espaço entre colunas
-  text(seq(1.5, end_point, by=2),
-       par("usr")[3]-0.25, 
-       srt = 60,
-       adj = 1,
-       xpd = TRUE,
-       labels = tabela_resumo$Especie,
-       cex = 1)
+       labels = tabela_resumo$Esp,
+       cex = 0.6)
   dev.off()
   
 }
@@ -301,19 +267,19 @@ plotSobre <- function(tabela_resumo, l){
 ### -------------------------------------------------------------------------------
 ### Variaveis globais
 
-# Define pasta com arquivos de medicoes
-TUME.PATH <- paste(getwd(), "/in/", sep = "")
+# Define pasta com arquivos de medicoes (arquivos de entrada)
+TUME.PATH <- paste(getwd(), "/input/", sep = "")
 
-# Define pasta com arquivos de medicoes
-TUME.OUT <- paste(getwd(), "/out/", sep = "")
+# Define pasta para armazenamento dos arquivos de saida
+TUME.OUT <- paste(getwd(), "/output/", sep = "")
 
-# Define pasta com arquivos de referência
-TUME.REF <- paste(getwd(), "/referencia/", sep = "")
+# Define pasta com arquivos de referencia (ex: lista de densidades basicas por material genetico)
+TUME.REF <- paste(getwd(), "/referencias/", sep = "")
 
 # Cria vetor com os nomes dos arquivos
 TUME.FILES <- list.files(TUME.PATH)
 
-# Importa tabela de densidade
+# Importa tabela de densidade (Densidades.csv)
 ESP.DENSIDADE <- read.csv(paste(TUME.REF, "Densidades.csv", sep=""))
 
 ### -------------------------------------------------------------------------------
@@ -325,7 +291,7 @@ for (l in TUME.FILES){
   # Importa arquivo de um tume
   tume = read.csv(paste(TUME.PATH, l, sep=""), sep=",")
   
-  # Salva vetor com nome das espécies contidas no TUME
+  # Salva vetor com nome das especies contidas no TUME
   TUME.ESP <- levels(tume$Esp)
   
   tabela_resumo = data.frame()
@@ -342,32 +308,29 @@ for (l in TUME.FILES){
         tabela_resumo = rbind(tabela_resumo, resumo_pos24desb(tume.esp, estH))
       } else {
         
-        sem_dados <- data.frame(Tume = tume.esp$N_tume[1],
-                                Especie = as.character(tume.esp$Esp[1]),
-                                Idade = 0,
-                                Area = 0,
+        sem_dados <- data.frame(N_tume = tume.esp$N_tume[1],
+                                Esp = as.character(tume.esp$Esp[1]),
+                                I_meses = 0,
+                                Parc_m2 = 0,
                                 Dapmed = 0,
                                 Dapsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
-                                N = 0,
-                                Sobre = 0,
+                                N_fuste = 0,
+                                Sobr = 0,
                                 G = 0,
                                 V = 0,
                                 IMA = 0,
-                                Biomassa = 0)
+                                B = 0)
         tabela_resumo <- rbind(tabela_resumo, sem_dados)
         
       }
     }
     
     plotVolume(tabela_resumo, l)
-    
-    #write.csv(tabela_resumo, file = paste(TUME.OUT, l, ".csv", sep = ""))
-    #unidades = c("", "meses", "m^2", "cm", "cm", "m", "m", "m", "m^2/ha", "m^3/ha", "fustes/ha", "%", "m^3/ha/ano")
-    #tabela_resumo = rbind(unidades, tabela_resumo)  
-    write.csv(tabela_resumo, file = paste(TUME.OUT, "out_", l, sep = ""))
+
+    write.csv(tabela_resumo, file = paste(TUME.OUT,"saida_", l, sep = ""),row.names=FALSE)
     
     
   } else if (tume$I_meses[1] > 23 & !(3 %in% tume$Cod)){
@@ -382,21 +345,21 @@ for (l in TUME.FILES){
         tabela_resumo = rbind(tabela_resumo, resumo_pos24(tume.esp, estH))
       } else {
         
-        sem_dados <- data.frame(Tume = tume.esp$N_tume[1],
-                                Especie = as.character(tume.esp$Esp[1]),
-                                Idade = 0,
-                                Area = 0,
+        sem_dados <- data.frame(N_tume = tume.esp$N_tume[1],
+                                Esp = as.character(tume.esp$Esp[1]),
+                                I_meses = 0,
+                                Parc_m2 = 0,
                                 Dapmed = 0,
                                 Dapsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
-                                N = 0,
-                                Sobre = 0,
+                                N_fuste = 0,
+                                Sobr = 0,
                                 G = 0,
                                 V = 0,
                                 IMA = 0,
-                                Biomassa = 0)
+                                B = 0)
         tabela_resumo <- rbind(tabela_resumo, sem_dados)
         
       }
@@ -404,10 +367,7 @@ for (l in TUME.FILES){
     
     plotVolume(tabela_resumo, l)
     
-    #write.csv(tabela_resumo, file = paste(TUME.OUT, l, ".csv", sep = ""))
-    #unidades = c("", "meses", "m^2", "cm", "cm", "m", "m", "m", "m^2/ha", "m^3/ha", "fustes/ha", "%", "m^3/ha/ano")
-    #tabela_resumo = rbind(unidades, tabela_resumo)  
-    write.csv(tabela_resumo, file = paste(TUME.OUT, "out_", l, sep = ""))
+    write.csv(tabela_resumo, file = paste(TUME.OUT,"saida_", l, sep = ""),row.names=FALSE)
     
     
   } else {
@@ -422,34 +382,29 @@ for (l in TUME.FILES){
         
       } else {
         
-        sem_dados <- data.frame(Tume = tume.esp$N_tume[1],
-                                Especie = as.character(tume.esp$Esp[1]),
-                                Idade = 0,
-                                Area = 0,
+        sem_dados <- data.frame(N_tume = tume.esp$N_tume[1],
+                                Esp = as.character(tume.esp$Esp[1]),
+                                I_meses = 0,
+                                Parc_m2 = 0,
                                 Dapmed = 0,
                                 Dapsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
-                                N = 0,
-                                Sobre = 0,
+                                N_fuste = 0,
+                                Sobr = 0,
                                 G = 0,
                                 V = 0,
                                 IMA = 0,
-                                Biomassa = 0)
+                                B = 0)
         tabela_resumo <- rbind(tabela_resumo, sem_dados)
         
       }
     }
     
-    #plotSobre(tabela_resumo, l)
     plotHmed(tabela_resumo, l)
     
-    #write.csv(tabela_resumo, file = paste(TUME.OUT, l, ".csv", sep = ""))
-    #unidades = c("", "meses", "m", "m", "fustes/ha", "%")
-    #tabela_resumo = rbind(unidades, tabela_resumo)
-    write.csv(tabela_resumo, file = paste(TUME.OUT, "out_", l, sep = ""))
-    
+    write.csv(tabela_resumo, file = paste(TUME.OUT, "saida_", l, sep = ""),row.names=FALSE)
     
   }
   
