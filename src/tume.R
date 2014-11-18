@@ -86,11 +86,11 @@ resumo_pos24 <- function(tume.esp, estH_m){
   resumo_pos$G = round(sum(na.omit(tume.esp$DAP_cm)^2 * pi /40000) * 10000 / tume.esp$Parc_m2[1], 1)
   resumo_pos$V = round(parcVolume(tume.esp), 0)  
   resumo_pos$IMA = round(resumo_pos$V[1] / (tume.esp$I_meses[1]/12), 1)
-  if (e %in% ESP.DENSIDADE$Esp){
-    resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
-  } else {
+  #if (e %in% ESP.DENSIDADE$Esp){
+  #  resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
+  #} else {
     resumo_pos$B = ""
-  } # Incluir depois
+  #} # Incluir depois
   
   return(resumo_pos)
   
@@ -130,11 +130,11 @@ resumo_pos24desb <- function(tume.esp, estH_m){
   resumo_pos$G = round(sum(na.omit(tume.esp$DAP_cm)^2 * pi /40000) * 10000 / tume.esp$Parc_m2[1], 1)
   resumo_pos$V = round(parcVolume(tume.esp), 0)
   resumo_pos$IMA = ""
-  if (e %in% ESP.DENSIDADE$Esp){
-    resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
-  } else {
+  #if (e %in% ESP.DENSIDADE$Esp){
+  #  resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
+  #} else {
     resumo_pos$B = ""
-  }
+  #}
   
   return(resumo_pos)
   
@@ -147,8 +147,8 @@ resumo_pre24 <- function(tume.esp){
                            Esp = as.character(tume.esp$Esp[1]),
                            I_meses = 0,
                            Parc_m2 = 0,
-                           Dapmed = 0,
-                           Dapsd = 0,
+                           DAPmed = 0,
+                           DAPsd = 0,
                            Hmed = 0,
                            Hsd = 0,
                            Hdom = 0,
@@ -161,8 +161,8 @@ resumo_pre24 <- function(tume.esp){
   
   resumo_pre$I_meses = tume.esp$I_meses[1]
   resumo_pre$Parc_m2 = round(tume.esp$Parc_m2[1], 1)
-  resumo_pre$Dapmed = ""
-  resumo_pre$Dapsd = ""
+  resumo_pre$DAPmed = ""
+  resumo_pre$DAPsd = ""
   resumo_pre$Hmed = round(mean(na.omit(tume.esp$H_m)), 1)
   resumo_pre$Hsd = round(sd(na.omit(tume.esp$H_m)), 1)
   resumo_pre$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1) # Stick 6
@@ -268,19 +268,19 @@ plotHmed <- function(tabela_resumo, l){
 ### Variaveis globais
 
 # Define pasta com arquivos de medicoes (arquivos de entrada)
-TUME.PATH <- paste(getwd(), "/input/", sep = "")
+TUME.PATH <- paste(getwd(), "/in/", sep = "")
 
 # Define pasta para armazenamento dos arquivos de saida
-TUME.OUT <- paste(getwd(), "/output/", sep = "")
+TUME.OUT <- paste(getwd(), "/out/", sep = "")
 
 # Define pasta com arquivos de referencia (ex: lista de densidades basicas por material genetico)
-TUME.REF <- paste(getwd(), "/referencias/", sep = "")
+#TUME.REF <- paste(getwd(), "/referencias/", sep = "")
 
 # Cria vetor com os nomes dos arquivos
 TUME.FILES <- list.files(TUME.PATH)
 
 # Importa tabela de densidade (Densidades.csv)
-ESP.DENSIDADE <- read.csv(paste(TUME.REF, "Densidades.csv", sep=""))
+#ESP.DENSIDADE <- read.csv(paste(TUME.REF, "Densidades.csv", sep=""))
 
 ### -------------------------------------------------------------------------------
 ### Inicio da analise
@@ -312,8 +312,8 @@ for (l in TUME.FILES){
                                 Esp = as.character(tume.esp$Esp[1]),
                                 I_meses = 0,
                                 Parc_m2 = 0,
-                                Dapmed = 0,
-                                Dapsd = 0,
+                                DAPmed = 0,
+                                DAPsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
@@ -349,8 +349,8 @@ for (l in TUME.FILES){
                                 Esp = as.character(tume.esp$Esp[1]),
                                 I_meses = 0,
                                 Parc_m2 = 0,
-                                Dapmed = 0,
-                                Dapsd = 0,
+                                DAPmed = 0,
+                                DAPsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
@@ -386,8 +386,8 @@ for (l in TUME.FILES){
                                 Esp = as.character(tume.esp$Esp[1]),
                                 I_meses = 0,
                                 Parc_m2 = 0,
-                                Dapmed = 0,
-                                Dapsd = 0,
+                                DAPmed = 0,
+                                DAPsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
