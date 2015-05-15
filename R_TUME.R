@@ -1,7 +1,5 @@
 # Code for processing TUME (ESALQ/USP)
-# Authores:
-#       Eric Bastos Gorgens (gorgens at usp.br)
-#       Andr√© Gracioso Peres da Silva
+# Authors: Eric Bastos Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso@gmail.com)
 ###############################################################################
 
 ### -------------------------------------------------------------------------------
@@ -16,7 +14,7 @@ hipsometrica <- function(tume.esp){
     }
   }
   
-  uteis = subset(tume.temp, tume.temp$H_m != "NA" & tume.temp$Cod != c(4, 7))
+  uteis = subset(tume.temp, tume.temp$H_m != "NA" & tume.temp$Cod != c(4,5,7))
   
   logH = log(uteis$H_m)
   invD = 1/uteis$DAP_cm
@@ -84,15 +82,15 @@ resumo_pos24 <- function(tume.esp, estH_m){
   resumo_pos$Hsd = round(sd(na.omit(tume.esp$H_m)), 1)
   resumo_pos$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1)
   resumo_pos$N_fuste = round(length(na.omit(tume.esp$DAP_cm)) * 10000 / tume.esp$Parc_m2[1], 0)
-  resumo_pos$Sobr = round((nrow(tume.esp[tume.esp$Cod != 1 & tume.esp$Cod != 5,]) / max(tume.esp$N_arv) * 100), 1) # Linhas diferentes de Cod 1 (falha) e Cod 5 (mortas) dividido pelo total de arvores
+  resumo_pos$Sobr = round(((1 - ((nrow(tume.esp) - nrow(tume.esp[tume.esp$Cod != 1 & tume.esp$Cod != 5,])) / max(tume.esp$N_arv))) * 100), 1) 
   resumo_pos$G = round(sum(na.omit(tume.esp$DAP_cm)^2 * pi /40000) * 10000 / tume.esp$Parc_m2[1], 1)
   resumo_pos$V = round(parcVolume(tume.esp), 0)  
   resumo_pos$IMA = round(resumo_pos$V[1] / (tume.esp$I_meses[1]/12), 1)
-  #if (e %in% ESP.DENSIDADE$Esp){
-  #  resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
-  #} else {
+  if (e %in% ESP.DENSIDADE$Esp){
+    resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
+  } else {
     resumo_pos$B = ""
-  #} # Incluir depois
+  } # Incluir depois
   
   return(resumo_pos)
   
@@ -132,25 +130,25 @@ resumo_pos24desb <- function(tume.esp, estH_m){
   resumo_pos$G = round(sum(na.omit(tume.esp$DAP_cm)^2 * pi /40000) * 10000 / tume.esp$Parc_m2[1], 1)
   resumo_pos$V = round(parcVolume(tume.esp), 0)
   resumo_pos$IMA = ""
-  #if (e %in% ESP.DENSIDADE$Esp){
-  #  resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
-  #} else {
+  if (e %in% ESP.DENSIDADE$Esp){
+    resumo_pos$B = round(resumo_pos$V[1] * ESP.DENSIDADE[ESP.DENSIDADE$Esp == e, 2],0)
+  } else {
     resumo_pos$B = ""
-  #}
+  }
   
   return(resumo_pos)
   
 }
 
-### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade inferior √† 24 meses
+### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade inferior ‡ 24 meses
 resumo_pre24 <- function(tume.esp){
   
   resumo_pre <- data.frame(N_tume = tume.esp$N_tume[1],
                            Esp = as.character(tume.esp$Esp[1]),
                            I_meses = 0,
                            Parc_m2 = 0,
-                           DAPmed = 0,
-                           DAPsd = 0,
+                           Dapmed = 0,
+                           Dapsd = 0,
                            Hmed = 0,
                            Hsd = 0,
                            Hdom = 0,
@@ -163,13 +161,13 @@ resumo_pre24 <- function(tume.esp){
   
   resumo_pre$I_meses = tume.esp$I_meses[1]
   resumo_pre$Parc_m2 = round(tume.esp$Parc_m2[1], 1)
-  resumo_pre$DAPmed = ""
-  resumo_pre$DAPsd = ""
+  resumo_pre$Dapmed = ""
+  resumo_pre$Dapsd = ""
   resumo_pre$Hmed = round(mean(na.omit(tume.esp$H_m)), 1)
   resumo_pre$Hsd = round(sd(na.omit(tume.esp$H_m)), 1)
   resumo_pre$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1) # Stick 6
   resumo_pre$N_fuste = round(length(na.omit(tume.esp$H_m)) * 10000 / tume.esp$Parc_m2[1], 0)
-  resumo_pre$Sobr = round((nrow(tume.esp[tume.esp$Cod != 1 & tume.esp$Cod != 5,]) / max(tume.esp$N_arv) * 100), 1) # Linhas diferentes de Cod 1 (falha) e Cod 5 (mortas) dividido pelo total de ?rvores
+  resumo_pre$Sobr = round(((1 - ((nrow(tume.esp) - nrow(tume.esp[tume.esp$Cod != 1 & tume.esp$Cod != 5,])) / max(tume.esp$N_arv))) * 100), 1) 
   resumo_pre$G = ""
   resumo_pre$V = ""
   resumo_pre$IMA = ""
@@ -206,7 +204,7 @@ plotVolume <- function(tabela_resumo, l){
           cex.main = 0.6,
           cex.axis = 0.6,
           cex.lab = 0.6,
-          ylab = "Volume (m¬≥/ha)",
+          ylab = "Volume (m≥/ha)",
           ylim = c(0, 1.1 * max(tabela_resumo$V)),
           xlab = "",
           space = 1)
@@ -225,7 +223,7 @@ plotVolume <- function(tabela_resumo, l){
 ### Cria grafico de barras para a variavel altura media
 plotHmed <- function(tabela_resumo, l){
   
-  #Ordena a altura m√©dia de forma descrescente 
+  #Ordena a altura mÈdia de forma descrescente 
   tabela_resumo = tabela_resumo[with(tabela_resumo, order(-Hmed)), ]
   
   #Distancia horizontal para ultimo rotulo do eixo x
@@ -270,19 +268,19 @@ plotHmed <- function(tabela_resumo, l){
 ### Variaveis globais
 
 # Define pasta com arquivos de medicoes (arquivos de entrada)
-TUME.PATH <- paste(getwd(), "/in/", sep = "")
+TUME.PATH <- paste(getwd(), "/input/", sep = "")
 
 # Define pasta para armazenamento dos arquivos de saida
-TUME.OUT <- paste(getwd(), "/out/", sep = "")
+TUME.OUT <- paste(getwd(), "/output/", sep = "")
 
 # Define pasta com arquivos de referencia (ex: lista de densidades basicas por material genetico)
-#TUME.REF <- paste(getwd(), "/referencias/", sep = "")
+TUME.REF <- paste(getwd(), "/referencias/", sep = "")
 
 # Cria vetor com os nomes dos arquivos
 TUME.FILES <- list.files(TUME.PATH)
 
 # Importa tabela de densidade (Densidades.csv)
-#ESP.DENSIDADE <- read.csv(paste(TUME.REF, "Densidades.csv", sep=""))
+ESP.DENSIDADE <- read.csv(paste(TUME.REF, "Densidades.csv", sep=""))
 
 ### -------------------------------------------------------------------------------
 ### Inicio da analise
@@ -314,8 +312,8 @@ for (l in TUME.FILES){
                                 Esp = as.character(tume.esp$Esp[1]),
                                 I_meses = 0,
                                 Parc_m2 = 0,
-                                DAPmed = 0,
-                                DAPsd = 0,
+                                Dapmed = 0,
+                                Dapsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
@@ -351,8 +349,8 @@ for (l in TUME.FILES){
                                 Esp = as.character(tume.esp$Esp[1]),
                                 I_meses = 0,
                                 Parc_m2 = 0,
-                                DAPmed = 0,
-                                DAPsd = 0,
+                                Dapmed = 0,
+                                Dapsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
@@ -388,8 +386,8 @@ for (l in TUME.FILES){
                                 Esp = as.character(tume.esp$Esp[1]),
                                 I_meses = 0,
                                 Parc_m2 = 0,
-                                DAPmed = 0,
-                                DAPsd = 0,
+                                Dapmed = 0,
+                                Dapsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
