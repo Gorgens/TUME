@@ -1,5 +1,6 @@
 # Code for processing TUME (ESALQ/USP)
 # Authors: Eric Bastos Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso@gmail.com)
+# Version 1.0
 ###############################################################################
 
 ### -------------------------------------------------------------------------------
@@ -140,7 +141,7 @@ resumo_pos24desb <- function(tume.esp, estH_m){
   
 }
 
-### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade inferior à 24 meses
+### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade inferior Ã  24 meses
 resumo_pre24 <- function(tume.esp){
   
   resumo_pre <- data.frame(N_tume = tume.esp$N_tume[1],
@@ -204,7 +205,7 @@ plotVolume <- function(tabela_resumo, l){
           cex.main = 0.6,
           cex.axis = 0.6,
           cex.lab = 0.6,
-          ylab = "Volume (m³/ha)",
+          ylab = "Volume (mÂ³/ha)",
           ylim = c(0, 1.1 * max(tabela_resumo$V)),
           xlab = "",
           space = 1)
@@ -223,7 +224,7 @@ plotVolume <- function(tabela_resumo, l){
 ### Cria grafico de barras para a variavel altura media
 plotHmed <- function(tabela_resumo, l){
   
-  #Ordena a altura média de forma descrescente 
+  #Ordena a altura mÃ©dia de forma descrescente 
   tabela_resumo = tabela_resumo[with(tabela_resumo, order(-Hmed)), ]
   
   #Distancia horizontal para ultimo rotulo do eixo x
