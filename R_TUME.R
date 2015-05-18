@@ -1,5 +1,5 @@
 # Code for processing TUME (ESALQ/USP)
-# Authors: Eric Bastos Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso@gmail.com)
+# Authors: Eric Bastos Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso at gmail.com)
 # Version 1.0
 ###############################################################################
 
