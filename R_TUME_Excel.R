@@ -1,10 +1,5 @@
 # Code for processing TUME (ESALQ/USP)
-<<<<<<< Updated upstream
-# Authors: Eric Bastos Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso at gmail.com)
-# Version 1.0
-=======
 # Authors: Eric Gorgens (gorgens at usp.br);Andre Gracioso Peres da Silva (andregracioso at gmail.com)
->>>>>>> Stashed changes
 ###############################################################################
 #version 1.0
 
@@ -146,7 +141,7 @@ resumo_pos24desb <- function(tume.esp, estH_m){
   
 }
 
-### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade inferior Ã  24 meses
+### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade inferior à 24 meses
 resumo_pre24 <- function(tume.esp){
   
   resumo_pre <- data.frame(N_tume = tume.esp$N_tume[1],
@@ -210,7 +205,7 @@ plotVolume <- function(tabela_resumo, l){
           cex.main = 0.6,
           cex.axis = 0.6,
           cex.lab = 0.6,
-          ylab = "Volume (mÂ³/ha)",
+          ylab = "Volume (m³/ha)",
           ylim = c(0, 1.1 * max(tabela_resumo$V)),
           xlab = "",
           space = 1)
@@ -229,7 +224,7 @@ plotVolume <- function(tabela_resumo, l){
 ### Cria grafico de barras para a variavel altura media
 plotHmed <- function(tabela_resumo, l){
   
-  #Ordena a altura mÃ©dia de forma descrescente 
+  #Ordena a altura média de forma descrescente 
   tabela_resumo = tabela_resumo[with(tabela_resumo, order(-Hmed)), ]
   
   #Distancia horizontal para ultimo rotulo do eixo x
@@ -273,17 +268,17 @@ plotHmed <- function(tabela_resumo, l){
 ### -------------------------------------------------------------------------------
 ### Variaveis globais
 
-# (vazio)
-# (vazio)
+# Recebe parâmetros do comando batch construído no código em VBA
+args = commandArgs(trailingOnly = TRUE)
 
 # Define pasta com arquivos de medicoes (arquivos de entrada)
-TUME.PATH <- paste(getwd(), "/input/", sep = "")
+TUME.PATH <- args[1]
 
 # Define pasta para armazenamento dos arquivos de saida
-TUME.OUT <- paste(getwd(), "/output/", sep = "")
+TUME.OUT <- args[2]
 
 # Define pasta com arquivos de referencia (ex: lista de densidades basicas por material genetico)
-TUME.REF <- paste(getwd(), "/referencias/", sep = "")
+TUME.REF <- args[3]
 
 # Cria vetor com os nomes dos arquivos
 TUME.FILES <- list.files(TUME.PATH)
