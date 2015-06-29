@@ -1,7 +1,13 @@
-# Code for processing TUME (ESALQ/USP)
-# Authors: Eric Gorgens (gorgens at usp.br);Andre Gracioso Peres da Silva (andregracioso at gmail.com)
+# Code for processing TUME (www.projetotume.com)
+# Authors: Eric Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso at gmail.com)
+#
+# Citation:
+# G√∂rgens, E.B.; Silva, A.G.P. (2015). R_TUME: Ferramentas de apoio para processamento dos dados de invent√°rio 
+# florestal do projeto Teste de Uso M√∫ltiplo do Eucalyptus. Vers√£o 1.0. Dispon√≠vel em: 
+# https://github.com/Gorgens/TUME/edit/master/R_TUME_Excel.R
+#
 ###############################################################################
-#version 1.0
+# version 1.0 (07/2015)
 
 ### -------------------------------------------------------------------------------
 ### Funcoes auxiliares
@@ -141,7 +147,7 @@ resumo_pos24desb <- function(tume.esp, estH_m){
   
 }
 
-### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade inferior ‡ 24 meses
+### Calcula e cria tabela de resumo (estatisticas) por especie para tumes com idade inferior √† 24 meses
 resumo_pre24 <- function(tume.esp){
   
   resumo_pre <- data.frame(N_tume = tume.esp$N_tume[1],
@@ -205,7 +211,7 @@ plotVolume <- function(tabela_resumo, l){
           cex.main = 0.6,
           cex.axis = 0.6,
           cex.lab = 0.6,
-          ylab = "Volume (m≥/ha)",
+          ylab = "Volume (m¬≥/ha)",
           ylim = c(0, 1.1 * max(tabela_resumo$V)),
           xlab = "",
           space = 1)
@@ -224,7 +230,7 @@ plotVolume <- function(tabela_resumo, l){
 ### Cria grafico de barras para a variavel altura media
 plotHmed <- function(tabela_resumo, l){
   
-  #Ordena a altura mÈdia de forma descrescente 
+  #Ordena a altura m√©dia de forma descrescente 
   tabela_resumo = tabela_resumo[with(tabela_resumo, order(-Hmed)), ]
   
   #Distancia horizontal para ultimo rotulo do eixo x
@@ -268,7 +274,7 @@ plotHmed <- function(tabela_resumo, l){
 ### -------------------------------------------------------------------------------
 ### Variaveis globais
 
-# Recebe par‚metros do comando batch construÌdo no cÛdigo em VBA
+# Recebe par√¢metros do comando batch constru√≠do no c√≥digo em VBA
 args = commandArgs(trailingOnly = TRUE)
 
 # Define pasta com arquivos de medicoes (arquivos de entrada)
