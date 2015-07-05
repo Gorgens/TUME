@@ -2,7 +2,7 @@
 # Authors: Eric Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso at gmail.com)
 #
 # Citation:
-# Görgens, E.B.; Silva, A.G.P. (2015). R_TUME: Ferramentas de apoio para processamento dos dados de inventário 
+# Görgens, E.B.; Silva, A.G.P. (2015). R_TUME: ferramenta de apoio para processamento dos dados de inventário 
 # florestal do projeto Teste de Uso Múltiplo do Eucalyptus. Versão 1.0. Disponível em: 
 # https://github.com/Gorgens/TUME/edit/master/R_TUME_Excel.R
 #
