@@ -1,13 +1,7 @@
-# Code for processing TUME (www.projetotume.com)
-# Authors: Eric Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso at gmail.com)
-#
-# Citation:
-# Görgens, E.B.; Silva, A.G.P. (2015). R_TUME: ferramenta de apoio para processamento dos dados de inventário 
-# florestal do projeto Teste de Uso Múltiplo do Eucalyptus. Versão 1.0. Disponível em: 
-# https://github.com/Gorgens/TUME/edit/master/R_TUME_Excel.R
-#
+# Code for processing TUME (ESALQ/USP)
+# Authors: Eric Bastos Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso@gmail.com)
+# Version 1.0
 ###############################################################################
-# version 1.0 (07/2015)
 
 ### -------------------------------------------------------------------------------
 ### Funcoes auxiliares
@@ -274,9 +268,6 @@ plotHmed <- function(tabela_resumo, l){
 ### -------------------------------------------------------------------------------
 ### Variaveis globais
 
-# (vazio)
-# (vazio)
-
 # Define pasta com arquivos de medicoes (arquivos de entrada)
 TUME.PATH <- paste(getwd(), "/input/", sep = "")
 
@@ -288,6 +279,7 @@ TUME.REF <- paste(getwd(), "/referencias/", sep = "")
 
 # Cria vetor com os nomes dos arquivos
 TUME.FILES <- list.files(TUME.PATH)
+#TUME.FILES = c("temp.csv")
 
 # Importa tabela de densidade (Densidades.csv)
 ESP.DENSIDADE <- read.csv(paste(TUME.REF, "Densidades.csv", sep=""))
@@ -322,8 +314,8 @@ for (l in TUME.FILES){
                                 Esp = as.character(tume.esp$Esp[1]),
                                 I_meses = 0,
                                 Parc_m2 = 0,
-                                Dapmed = 0,
-                                Dapsd = 0,
+                                DAPmed = 0,
+                                DAPsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
@@ -359,8 +351,8 @@ for (l in TUME.FILES){
                                 Esp = as.character(tume.esp$Esp[1]),
                                 I_meses = 0,
                                 Parc_m2 = 0,
-                                Dapmed = 0,
-                                Dapsd = 0,
+                                DAPmed = 0,
+                                DAPsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
@@ -396,8 +388,8 @@ for (l in TUME.FILES){
                                 Esp = as.character(tume.esp$Esp[1]),
                                 I_meses = 0,
                                 Parc_m2 = 0,
-                                Dapmed = 0,
-                                Dapsd = 0,
+                                DAPmed = 0,
+                                DAPsd = 0,
                                 Hmed = 0,
                                 Hsd = 0,
                                 Hdom = 0,
