@@ -268,17 +268,17 @@ plotHmed <- function(tabela_resumo, l){
 ### -------------------------------------------------------------------------------
 ### Variaveis globais
 
-# Recebe parâmetros do comando batch construído no código em VBA
-args = commandArgs(trailingOnly = TRUE)
+# (vazio)
+# (vazio)
 
 # Define pasta com arquivos de medicoes (arquivos de entrada)
-TUME.PATH <- args[1]
+TUME.PATH <- paste(getwd(), "/input/", sep = "")
 
 # Define pasta para armazenamento dos arquivos de saida
-TUME.OUT <- args[2]
+TUME.OUT <- paste(getwd(), "/output/", sep = "")
 
 # Define pasta com arquivos de referencia (ex: lista de densidades basicas por material genetico)
-TUME.REF <- args[3]
+TUME.REF <- paste(getwd(), "/referencias/", sep = "")
 
 # Cria vetor com os nomes dos arquivos
 TUME.FILES <- list.files(TUME.PATH)
