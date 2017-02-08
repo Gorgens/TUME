@@ -1,7 +1,7 @@
 # Code for processing TUME (ESALQ/USP)
-# Authors: Eric Bastos Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso@gmail.com)
-# Version 1.0
+# Authors: Gorgens (gorgens at usp.br); Andre Gracioso Peres da Silva (andregracioso@gmail.com)
 ###############################################################################
+#version 1.01 (dez/2016)
 
 ### -------------------------------------------------------------------------------
 ### Funcoes auxiliares
@@ -148,8 +148,8 @@ resumo_pre24 <- function(tume.esp){
                            Esp = as.character(tume.esp$Esp[1]),
                            I_meses = 0,
                            Parc_m2 = 0,
-                           Dapmed = 0,
-                           Dapsd = 0,
+                           DAPmed = 0,
+                           DAPsd = 0,
                            Hmed = 0,
                            Hsd = 0,
                            Hdom = 0,
@@ -162,8 +162,8 @@ resumo_pre24 <- function(tume.esp){
   
   resumo_pre$I_meses = tume.esp$I_meses[1]
   resumo_pre$Parc_m2 = round(tume.esp$Parc_m2[1], 1)
-  resumo_pre$Dapmed = ""
-  resumo_pre$Dapsd = ""
+  resumo_pre$DAPmed = ""
+  resumo_pre$DAPsd = ""
   resumo_pre$Hmed = round(mean(na.omit(tume.esp$H_m)), 1)
   resumo_pre$Hsd = round(sd(na.omit(tume.esp$H_m)), 1)
   resumo_pre$Hdom = round(mean(na.omit(tume.esp[tume.esp$Cod == 6, names(tume.esp) %in% c("H_m")])), 1) # Stick 6
@@ -189,9 +189,9 @@ plotVolume <- function(tabela_resumo, l){
   
   if (nrow(tabela_resumo) > 17) {
   #Armazena grafico de barras do Volume em um arquivo de extensao .jpeg
-  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = nrow(tabela_resumo)*0.6, units = "cm", res = 300)
+  jpeg(paste(TUME.OUT, sub(".csv","",l,fixed=TRUE), ".jpg", sep=""), height = 7, width = nrow(tabela_resumo)*0.6, units = "cm", res = 300)
   } else {
-  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = 10, units = "cm", res = 300)  
+  jpeg(paste(TUME.OUT, sub(".csv","",l,fixed=TRUE), ".jpg", sep=""), height = 7, width = 10, units = "cm", res = 300)  
   }
     
   #Adiciona espaco na margem inferior para rotulacao do eixo x
@@ -232,9 +232,9 @@ plotHmed <- function(tabela_resumo, l){
   
   if (nrow(tabela_resumo) > 17) {
   #Armazena grafico de barras do Volume em um arquivo de extensao .jpeg
-  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = nrow(tabela_resumo)*0.6, units = "cm", res = 300)
+  jpeg(paste(TUME.OUT, sub(".csv","",l,fixed=TRUE), ".jpg", sep=""), height = 7, width = nrow(tabela_resumo)*0.6, units = "cm", res = 300)
   } else {
-  jpeg(paste(TUME.OUT, l, ".jpg", sep=""), height = 7, width = 10, units = "cm", res = 300) 
+  jpeg(paste(TUME.OUT, sub(".csv","",l,fixed=TRUE), ".jpg", sep=""), height = 7, width = 10, units = "cm", res = 300) 
   }
   
   #Adiciona espaco na margem inferior para rotulacao do eixo x
@@ -268,18 +268,20 @@ plotHmed <- function(tabela_resumo, l){
 ### -------------------------------------------------------------------------------
 ### Variaveis globais
 
+# Recebe parâmetros do comando batch construído no código em VBA
+args = commandArgs(trailingOnly = TRUE)
+
 # Define pasta com arquivos de medicoes (arquivos de entrada)
-TUME.PATH <- paste(getwd(), "/input/", sep = "")
+TUME.PATH <- args[1]
 
 # Define pasta para armazenamento dos arquivos de saida
-TUME.OUT <- paste(getwd(), "/output/", sep = "")
+TUME.OUT <- args[2]
 
 # Define pasta com arquivos de referencia (ex: lista de densidades basicas por material genetico)
-TUME.REF <- paste(getwd(), "/referencias/", sep = "")
+TUME.REF <- args[3]
 
 # Cria vetor com os nomes dos arquivos
 TUME.FILES <- list.files(TUME.PATH)
-#TUME.FILES = c("temp.csv")
 
 # Importa tabela de densidade (Densidades.csv)
 ESP.DENSIDADE <- read.csv(paste(TUME.REF, "Densidades.csv", sep=""))
